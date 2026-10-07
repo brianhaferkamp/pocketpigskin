@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Pigskin</title>
+    <style>
+        :root {
+            --bg-color: #1a241e;
+            --card-bg: #26342b;
+            --accent-gold: #d4af37;
+            --text-light: #f0f4f1;
+            --text-dim: #a3b8a8;
+            --btn-green: #2e7d32;
+            --btn-hover: #388e3c;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            margin: 0;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-gold);
+            margin: 0 0 4px 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        .scoreboard {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .team-box h3 { margin: 0; font-size: 0.9rem; color: var(--text-dim); }
+        .team-box .score { font-size: 2rem; font-weight: bold; color: var(--accent-gold); }
+        .team-box select {
+            background: #111;
+            color: var(--text-light);
+            border: 1px solid var(--text-dim);
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin-top: 4px;
+            font-size: 0.75rem;
+        }
+
+        .game-status {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        button {
+            background: var(--btn-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: var(--btn-hover); }
+        button:disabled { background: #444; opacity: 0.6; cursor: not-allowed; }
+
+        .dice-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 10px 0;
+        }
+
+        .die {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .log-box {
+            background: rgba(0,0,0,0.4);
+            border-radius: 6px;
+            padding: 10px;
+            height: 160px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            border: 1px solid #333;
+        }
+
+        .log-entry { margin-bottom: 6px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .highlight { color: var(--accent-gold); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pocket Pigskin</h1>
+    <div class="subtitle">A 30-Minute Tabletop Dice Engine</div>
+
+    <div class="scoreboard">
+        <div class="team-box">
+            <h3>HOME</h3>
+            <div class="score" id="homeScore">0</div>
+            <div>Off: <select id="homeOff"><option value="2">+2</option><option value="1">+1</option><option value="0" selected>0</option><option value="-1">-1</option><option value="-2">-2</option></select></div>
+            <div>Def: <select id="homeDef"><option value="-2">-2</option><option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option><option value="2">+2</option></select></div>
+        </div>
+        <div class="game-status" id="gameStatus">Q1<br>Drive 1/16</div>
+        <div class="team-box">
+            <h3>AWAY</h3>
+            <div class="score" id="awayScore">0</div>
+            <div>Off: <select id="awayOff"><option value="2">+2</option><option value="1">+1</option><option value="0" selected>0</option><option value="-1">-1</option><option value="-2">-2</option></select></div>
+            <div>Def: <select id="awayDef"><option value="-2">-2</option><option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option><option value="2">+2</option></select></div>
+        </div>
+    </div>
+
+    <div class="dice-display">
+        <div class="die" id="die1">-</div>
+        <div class="die" id="die2">-</div>
+    </div>
+
+    <div class="controls">
+        <button id="rollBtn" onclick="playDrive()">Roll Drive</button>
+        <button id="resetBtn" onclick="resetGame()" style="background:#8b0000;">Reset Game</button>
+    </div>
+
+    <div class="log-box" id="gameLog">
+        <div class="log-entry">Ready for kickoff! Click 'Roll Drive' to start.</div>
+    </div>
+</div>
+
+<script>
+    let currentDrive = 1;
+    let homeScore = 0;
+    let awayScore = 0;
+
+    function roll2d6() {
+        const d1 = Math.floor(Math.random() * 6) + 1;
+        const d2 = Math.floor(Math.random() * 6) + 1;
+        document.getElementById('die1').innerText = d1;
+        document.getElementById('die2').innerText = d2;
+        return { d1, d2, total: d1 + d2 };
+    }
+
+    function log(msg) {
+        const logBox = document.getElementById('gameLog');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = msg;
+        logBox.insertBefore(entry, logBox.firstChild);
+    }
+
+    function playDrive() {
+        if (currentDrive > 16) {
+            log("<strong>Game Over!</strong> Final Score: Home " + homeScore + " - Away " + awayScore);
+            return;
+        }
+
+        const quarter = Math.ceil(currentDrive / 4);
+        const isHomeDrive = (currentDrive % 2 !== 0);
+        const offenseTeam = isHomeDrive ? "Home" : "Away";
+        const defenseTeam = isHomeDrive ? "Away" : "Home";
+
+        const offRating = parseInt(document.getElementById(isHomeDrive ? 'homeOff' : 'awayOff').value);
+        const defRating = parseInt(document.getElementById(isHomeDrive ? 'awayDef' : 'homeDef').value);
+        
+        let netMod = offRating + defRating;
+        if (netMod > 2) netMod = 2;
+        if (netMod < -2) netMod = -2;
+
+        // Q4 Comeback Modifier
+        let comebackMod = 0;
+        if (quarter === 4) {
+            const diff = isHomeDrive ? (awayScore - homeScore) : (homeScore - awayScore);
+            if (diff > 0 && diff <= 8) {
+                comebackMod = 1;
+            }
+        }
+
+        const dice = roll2d6();
+        const totalRoll = dice.total + netMod + comebackMod;
+
+        let resultMsg = `[Q${quarter} Drive ${currentDrive}] ${offenseTeam} (Roll: ${dice.total} + Mod: ${netMod + comebackMod} = ${totalRoll}): `;
+
+        if (totalRoll <= 3) {
+            resultMsg += "Turnover! Drive Stalls.";
+        } else if (totalRoll <= 5) {
+            resultMsg += "Punt (40 Yds). No Score.";
+        } else if (totalRoll <= 7) {
+            const fgRoll = roll2d6().total;
+            if (fgRoll >= 5) {
+                resultMsg += "<span class='highlight'>Field Goal GOOD! (+3 Pts)</span>";
+                addScore(offenseTeam, 3);
+            } else {
+                resultMsg += "FG Missed. Punt.";
+            }
+        } else if (totalRoll <= 9) {
+            const tdRoll = Math.floor(Math.random() * 6) + 1;
+            if (tdRoll >= 5) {
+                resultMsg += "<span class='highlight'>TOUCHDOWN! (+7 Pts)</span>";
+                addScore(offenseTeam, 7);
+            } else {
+                resultMsg += "<span class='highlight'>Field Goal GOOD! (+3 Pts)</span>";
+                addScore(offenseTeam, 3);
+            }
+        } else if (totalRoll <= 11) {
+            const tdRoll = Math.floor(Math.random() * 6) + 1 + 2; // +2 TD check mod
+            if (tdRoll >= 5) {
+                resultMsg += "<span class='highlight'>Big Play TOUCHDOWN! (+7 Pts)</span>";
+                addScore(offenseTeam, 7);
+            } else {
+                resultMsg += "<span class='highlight'>Field Goal GOOD! (+3 Pts)</span>";
+                addScore(offenseTeam, 3);
+            }
+        } else {
+            resultMsg += "<span class='highlight'>EXPLOSIVE TOUCHDOWN! (+7 Pts)</span>";
+            addScore(offenseTeam, 7);
+        }
+
+        log(resultMsg);
+        currentDrive++;
+
+        if (currentDrive <= 16) {
+            const nextQ = Math.ceil(currentDrive / 4);
+            document.getElementById('gameStatus').innerHTML = `Q${nextQ}<br>Drive ${currentDrive}/16`;
+        } else {
+            document.getElementById('gameStatus').innerHTML = "FINAL";
+            document.getElementById('rollBtn').disabled = true;
+            log(`<strong>FINAL SCORE:</strong> Home ${homeScore} - Away ${awayScore}`);
+        }
+    }
+
+    function addScore(team, pts) {
+        if (team === "Home") {
+            homeScore += pts;
+            document.getElementById('homeScore').innerText = homeScore;
+        } else {
+            awayScore += pts;
+            document.getElementById('awayScore').innerText = awayScore;
+        }
+    }
+
+    function resetGame() {
+        currentDrive = 1;
+        homeScore = 0;
+        awayScore = 0;
+        document.getElementById('homeScore').innerText = '0';
+        document.getElementById('awayScore').innerText = '0';
+        document.getElementById('gameStatus').innerHTML = 'Q1<br>Drive 1/16';
+        document.getElementById('rollBtn').disabled = false;
+        document.getElementById('gameLog').innerHTML = '<div class="log-entry">Game Reset. Ready for kickoff!</div>';
+    }
+</script>
+</body>
+</html>
